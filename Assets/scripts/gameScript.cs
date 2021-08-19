@@ -5,104 +5,144 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class gameScript : MonoBehaviour
+namespace Assets.scripts
 {
 
-    List<int[,]> screens;
-    public Camera myCamera;
-    int WIDTH = 7;
-    int HEIGHT = 4;
-
-    public Button exitButton;
-    public GameObject scene;
-
-    public int currentScreen;
-
-    void Start()
+    public class gameScript : MonoBehaviour
     {
 
-        exitButton.onClick.AddListener(goToMenu);
+        List<int[,]> screens;
+        public Camera myCamera;
+        int WIDTH = 9;
+        int HEIGHT = 6;
 
-        screens = new List<int[,]>();
+        public Button exitButton;
+        public GameObject scene;
 
-        readLayouts("Assets/maze/layouts");
+        public int currentScreen;
+        public GameObject playerPrefab;
+        public GameObject player;
 
-        myCamera.transform.localPosition = new Vector3(6f, -3f, -9f);
+        float timeRemaining = 1;
+        int timeRemainingInt = 3;
+        public Text countDownText;
+        Assets.scripts.playerScript myScript;
 
-        instantiateWorld();
 
-    }
-
-
-    void instantiateWorld()
-    {
-        int x = Random.Range(0,screens.Count);
-
-        currentScreen = x;
-        Shader unlitColorShader = Shader.Find("Unlit/Color");
-
-        int[,] sl = screens[x];
-
-        for (int i = 0;i < WIDTH;i++)
+        void Start()
         {
-            for (int j = 0; j < HEIGHT; j++)
+
+            exitButton.onClick.AddListener(goToMenu);
+
+            screens = new List<int[,]>();
+
+            readLayouts("Assets/maze/layouts");
+
+            myCamera.transform.localPosition = new Vector3(7.72f, -4.97f, -11.6f);
+
+            instantiateWorld();
+
+            player = Instantiate(playerPrefab);
+
+            player.transform.SetParent(scene.transform);
+
+            myScript = player.GetComponent<Assets.scripts.playerScript>();
+            myScript.setStartPosition(screens[currentScreen], WIDTH, HEIGHT);
+
+        }
+
+
+        void instantiateWorld()
+        {
+            int x = Random.Range(0, screens.Count);
+
+            currentScreen = x;
+            Shader unlitColorShader = Shader.Find("Standard");
+
+            int[,] sl = screens[x];
+
+            for (int i = 0; i < WIDTH; i++)
             {
-                if (sl[i, j] == 1)
+                for (int j = 0; j < HEIGHT; j++)
                 {
-                    GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                    quad.transform.SetParent(scene.transform);
-                    quad.GetComponent<Renderer>().material.color = Color.white;
-                    quad.GetComponent<Renderer>().material.shader = unlitColorShader;
-                    quad.transform.localScale = new Vector3(2, 2, 2);
-                    quad.transform.position = new Vector3(i*2f, -j*2f, 0);
+                    if (sl[i, j] == 0)
+                    {
+                        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        cube.transform.SetParent(scene.transform);
+                        cube.GetComponent<Renderer>().material.color = Color.white;
+                        cube.GetComponent<BoxCollider>().size = new Vector3(1.1f, 1f, 1.1f);//make the collider a little bit bigger than the actual box!
+                        //cube.GetComponent<BoxCollider>().isTrigger = true;
+
+                        //Rigidbody gameObjectsRigidBody = cube.AddComponent<Rigidbody>(); // Add the rigidbody.
+                        //gameObjectsRigidBody.useGravity = false;
+
+                        cube.transform.localScale = new Vector3(2, 2, 2);
+                        cube.transform.position = new Vector3(i * 2f, -j * 2f, 0);
+                    }
+                }
+
+            }
+        }
+
+
+        void readLayouts(string file_path)
+        {
+            StreamReader inp_stm = new StreamReader(file_path);
+            int[,] newScreen = new int[WIDTH, HEIGHT];
+
+            int index = 0;
+            while (!inp_stm.EndOfStream)
+            {
+                string inp_ln = inp_stm.ReadLine();
+
+                if (inp_ln.Contains("-") == true)
+                {
+                    newScreen = new int[WIDTH, HEIGHT];
+                    screens.Add(newScreen);
+                    index = 0;
+                }
+                else
+                {
+                    string[] line = inp_ln.Split(",".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
+
+                    for (int i = 0; i < WIDTH; i++)
+                        newScreen[i, index] = int.Parse(line[i]);
+
+                    screens[screens.Count - 1] = newScreen;
+                    index++;
+                }
+
+            }
+
+            inp_stm.Close();
+        }
+
+        void goToMenu()
+        {
+            SceneManager.LoadSceneAsync("menu");
+        }
+
+
+
+        void Update()
+        {
+
+            if (timeRemainingInt > 0)
+            {
+                if (timeRemaining > 0)
+                    timeRemaining -= Time.deltaTime;
+                else
+                {
+                    timeRemainingInt--;
+                    countDownText.text = timeRemainingInt.ToString();
+                    timeRemaining = 1;
+                    if (timeRemainingInt == 0)
+                    {
+                        countDownText.gameObject.SetActive(false);
+                        myScript.startTheGame();
+                    }
                 }
             }
-
         }
-    }
-
-
-    void readLayouts(string file_path)
-    {
-        StreamReader inp_stm = new StreamReader(file_path);
-        int[,] newScreen= new int[WIDTH, HEIGHT];
-
-        int index = 0;
-        while (!inp_stm.EndOfStream)
-        {
-            string inp_ln = inp_stm.ReadLine();
-
-            if (inp_ln.Contains("-") == true)
-            {
-                newScreen = new int[WIDTH, HEIGHT];
-                screens.Add(newScreen);
-                index = 0;
-            }
-            else
-            {
-                string [] line = inp_ln.Split(",".ToCharArray(), System.StringSplitOptions.RemoveEmptyEntries);
-
-                for (int i = 0; i < WIDTH; i++)
-                    newScreen[i, index] = int.Parse(line[i]);
-
-                screens[screens.Count - 1] = newScreen;
-                index++;
-            }
-            
-        }
-
-        inp_stm.Close();
-    }
-
-    void goToMenu()
-    {
-        SceneManager.LoadSceneAsync("menu");
-    }
-
-
-
-    void Update()
-    {
-        
     }
 }

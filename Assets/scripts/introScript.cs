@@ -4,18 +4,21 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class introScript : MonoBehaviour
+namespace Assets.scripts
 {
-
-    public Button playButton;
-    void Start()
+    public class introScript : MonoBehaviour
     {
-        playButton.onClick.AddListener(goToPlay);
-    }
+
+        public Button playButton;
+        void Start()
+        {
+            playButton.onClick.AddListener(goToPlay);
+        }
 
 
-    void goToPlay()
-    {
-        SceneManager.LoadSceneAsync("game");
+        void goToPlay()
+        {
+            SceneManager.LoadSceneAsync("game");
+        }
     }
 }
