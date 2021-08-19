@@ -14,11 +14,10 @@ namespace Assets.scripts
         int timeStartingWindow;
         enum movement { LEFT, RIGHT, JUMP_LEFT, JUMP_RIGHT, NONE};
         movement currentDirection;
-        float INC = 0.01f;
-        float ANGLE_INCREASE = 0.05f;
+        float INC = 0.02f;
         int THRESHOLD_Y = 20;
-        float angle, previousY;
         Vector3 startPosition;
+        string stateAnimation;
 
         public void setStartPosition(int[,] screen, int w, int h)
         {
@@ -53,11 +52,16 @@ namespace Assets.scripts
             readyToStart = false;
             currentDirection = movement.RIGHT;
 
-            transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            transform.localScale = new Vector3(0.7f, 0.7f, 0.79f);
 
             anim = GetComponent<Animator>();
 
+            stateAnimation = "idle";
+
             anim.Play("idle");
+
+
+
 
         }
 
@@ -68,55 +72,70 @@ namespace Assets.scripts
         }
 
 
+
         void Update()
         {
-            //Debug.Log(windowToClimb.ToString());
+
             if (windowToClimb == true)
             {
                 int currentTime = (System.DateTime.Now.Hour * 3600000) + (System.DateTime.Now.Minute * 60000) + (System.DateTime.Now.Second * 1000) + (System.DateTime.Now.Millisecond);
                 int deltaTime = currentTime - timeStartingWindow;
-                if (deltaTime > 1000)
+                if (deltaTime > 2000)
                     windowToClimb = false;
             }
             if (readyToStart == true)
             {
+
                 switch (currentDirection)
                 {
                     case movement.RIGHT:
-                        transform.localPosition = new Vector3(transform.localPosition.x + INC, transform.localPosition.y, transform.localPosition.z);
+                        transform.localPosition = new Vector3(transform.localPosition.x + INC, transform.localPosition.y , transform.localPosition.z);
                     break;
 
                     case movement.LEFT:
                         transform.localPosition = new Vector3(transform.localPosition.x - INC, transform.localPosition.y, transform.localPosition.z);
                     break;
-
+                        
                     case movement.JUMP_RIGHT:
-                        transform.localPosition = new Vector3(transform.localPosition.x + INC, transform.localPosition.y + Mathf.Sin(angle) / 50f, transform.localPosition.z);
-                        angle += ANGLE_INCREASE;
+                        //transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z);
+                        //if (AnimatorIsPlaying("jumping") == true)
+                        //    currentDirection = movement.RIGHT;
 
-                        if (angle > Mathf.PI * 2f)
+                        StartCoroutine(CheckAnimationCompleted("jumping", () =>
                         {
-                            transform.localPosition = new Vector3(transform.localPosition.x, previousY, transform.localPosition.z);
-                            angle = 0;
-                            currentDirection = movement.RIGHT;
-                            anim.Play("walking");
+                            //anim.SetBool("Shoot", false);
+                            // Your any code
+                            if (currentDirection == movement.JUMP_RIGHT)
+                                currentDirection = movement.RIGHT;
+                            else
+                                currentDirection = movement.LEFT;
+
                         }
+                        ));
+
+
                         break;
 
                     case movement.JUMP_LEFT:
-                        transform.localPosition = new Vector3(transform.localPosition.x - INC, transform.localPosition.y + Mathf.Sin(angle) / 50f, transform.localPosition.z);
-                        angle += ANGLE_INCREASE;
-                        
-                        if (angle > Mathf.PI * 2f)
+                        //transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z);
+                        //if (AnimatorIsPlaying("jumping") == true)
+                        //    currentDirection = movement.LEFT;
+
+
+                        StartCoroutine(CheckAnimationCompleted("jumping", () =>
                         {
-                            transform.localPosition = new Vector3(transform.localPosition.x, previousY, transform.localPosition.z);
-                            angle = 0;
-                            currentDirection = movement.LEFT;
-                            anim.Play("walking");
+                            //anim.SetBool("Shoot", false);
+                            // Your any code
+                            if (currentDirection == movement.JUMP_RIGHT)
+                                currentDirection = movement.RIGHT;
+                            else
+                                currentDirection = movement.LEFT;
+
                         }
+                        ));
 
-                    break;
-
+                        break;
+                        
                     case movement.NONE:
                         break;
 
@@ -132,7 +151,7 @@ namespace Assets.scripts
                     float swipeY = startPosition.y - Input.mousePosition.y;
                     float swipeX = startPosition.x - Input.mousePosition.x;
 
-                    string stateAnimation = anim.GetCurrentAnimatorClipInfo(0)[0].clip.name;//////////////////////////////////////////////
+                    stateAnimation = anim.GetCurrentAnimatorClipInfo(0)[0].clip.name;//////////////////////////////////////////////
 
                     if (Mathf.Abs(swipeY) < THRESHOLD_Y)//move in x
                     {
@@ -143,7 +162,6 @@ namespace Assets.scripts
                                 if (currentDirection == movement.LEFT)
                                     transform.Rotate(new Vector3(0, 1, 0), 180);
 
-                                //string stateAnimation = anim.GetCurrentAnimatorClipInfo(0)[0].clip.name;
                                 if (stateAnimation.CompareTo("walking") != 0)
                                     anim.Play("walking");
 
@@ -154,7 +172,6 @@ namespace Assets.scripts
                                 if (currentDirection == movement.RIGHT)
                                     transform.Rotate(new Vector3(0, 1, 0), 180);
 
-                                //string stateAnimation = anim.GetCurrentAnimatorClipInfo(0)[0].clip.name;
                                 if (stateAnimation.CompareTo("walking") != 0)
                                     anim.Play("walking");
 
@@ -171,10 +188,7 @@ namespace Assets.scripts
                                 if ((currentDirection == movement.LEFT) || (currentDirection == movement.JUMP_LEFT))
                                     transform.Rotate(new Vector3(0, 1, 0), 180);
 
-                                previousY = transform.localPosition.y;
-
                                 anim.Play("jumping");
-                                Debug.Log("jumping right");
                                 currentDirection = movement.JUMP_RIGHT;
                             }
                             else
@@ -183,34 +197,39 @@ namespace Assets.scripts
                                     transform.Rotate(new Vector3(0, 1, 0), 180);
 
                                 anim.Play("jumping");
-                                Debug.Log("jumping left");
                                 currentDirection = movement.JUMP_LEFT;
                             }
                         }
                         if (windowToClimb == true)
                         {
+                            anim.StopPlayback();
+                            
+                            //Debug.Log("climbing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                             if (swipeX < 0)
                             {
+                              //  Debug.Log("RIGHT !!!!!!!!!!!!!!!");
                                 if (currentDirection == movement.JUMP_LEFT)
                                     transform.Rotate(new Vector3(0, 1, 0), 180);
 
-                                previousY = transform.localPosition.y;
+                                transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 1, transform.localPosition.z);
 
-                                anim.StopPlayback();
+                                //anim.StopPlayback();
                                 anim.Play("jumping");
-                                Debug.Log("jumping right (climbing)");
                                 currentDirection = movement.JUMP_RIGHT;
                             }
                             else
                             {
+                                //Debug.Log("LEFT !!!!!!!!!!!!!!!");
                                 if (currentDirection == movement.JUMP_RIGHT)
                                     transform.Rotate(new Vector3(0, 1, 0), 180);
 
-                                anim.StopPlayback();
+                                transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y + 1, transform.localPosition.z);
+
+                                //anim.StopPlayback();
                                 anim.Play("jumping");
-                                Debug.Log("jumping left (climbing)");
                                 currentDirection = movement.JUMP_LEFT;
                             }
+                            
                         }
                     }
 
@@ -220,16 +239,21 @@ namespace Assets.scripts
             }
         }
 
+
+        public IEnumerator CheckAnimationCompleted(string CurrentAnim, Action Oncomplete)
+        {
+            while (!anim.GetCurrentAnimatorStateInfo(0).IsName(CurrentAnim))
+                yield return null;
+            if (Oncomplete != null)
+                Oncomplete();
+        }
+
+
         void OnCollisionEnter(Collision collision)
         {
             windowToClimb = true;
             anim.Play("idle");
             timeStartingWindow = (System.DateTime.Now.Hour * 3600000) + (System.DateTime.Now.Minute * 60000) + (System.DateTime.Now.Second * 1000) + (System.DateTime.Now.Millisecond);
-            //currentDirection = movement.NONE;
-            //foreach (ContactPoint contact in collision.contacts)
-            //{
-            //    Debug.DrawRay(contact.point, contact.normal, Color.white);
-            //}
         }
 
 

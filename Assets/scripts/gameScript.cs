@@ -71,10 +71,6 @@ namespace Assets.scripts
                         cube.transform.SetParent(scene.transform);
                         cube.GetComponent<Renderer>().material.color = Color.white;
                         cube.GetComponent<BoxCollider>().size = new Vector3(1.1f, 1f, 1.1f);//make the collider a little bit bigger than the actual box!
-                        //cube.GetComponent<BoxCollider>().isTrigger = true;
-
-                        //Rigidbody gameObjectsRigidBody = cube.AddComponent<Rigidbody>(); // Add the rigidbody.
-                        //gameObjectsRigidBody.useGravity = false;
 
                         cube.transform.localScale = new Vector3(2, 2, 2);
                         cube.transform.position = new Vector3(i * 2f, -j * 2f, 0);
