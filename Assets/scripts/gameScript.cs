@@ -28,6 +28,9 @@ namespace Assets.scripts
         public Text countDownText;
         Assets.scripts.playerScript myScript;
 
+        public Button butonleft, butonright;
+        public RawImage testImage;
+        public Text showText;
 
         void Start()
         {
@@ -48,6 +51,12 @@ namespace Assets.scripts
 
             myScript = player.GetComponent<Assets.scripts.playerScript>();
             myScript.setStartPosition(screens[currentScreen], WIDTH, HEIGHT);
+
+            butonleft.onClick.AddListener(buttonfake1);
+            butonright.onClick.AddListener(buttonfake2);
+
+            myScript.kkTestImage = testImage;
+            myScript.kkshowText = showText;
 
         }
 
@@ -70,10 +79,12 @@ namespace Assets.scripts
                         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         cube.transform.SetParent(scene.transform);
                         cube.GetComponent<Renderer>().material.color = Color.white;
-                        cube.GetComponent<BoxCollider>().size = new Vector3(1.1f, 1f, 1.1f);//make the collider a little bit bigger than the actual box!
+                        cube.GetComponent<BoxCollider>().size = new Vector3(1.1f, 1.1f, 1.1f);//make the collider a little bit bigger than the actual box!
 
                         cube.transform.localScale = new Vector3(2, 2, 2);
                         cube.transform.position = new Vector3(i * 2f, -j * 2f, 0);
+
+                        cube.AddComponent<Assets.scripts.cubeScript>().setValue(cubeScript.modes.NONE);
                     }
                 }
 
@@ -116,6 +127,15 @@ namespace Assets.scripts
         void goToMenu()
         {
             SceneManager.LoadSceneAsync("menu");
+        }
+
+        void buttonfake1()
+        {
+            myScript.pressbuttonfake1();
+        }
+        void buttonfake2()
+        {
+            myScript.pressbuttonfake2();
         }
 
 

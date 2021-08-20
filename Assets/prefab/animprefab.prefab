@@ -1584,6 +1584,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de9e2d58dbe81504692a017d4589c8f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  kkTestImage: {fileID: 0}
+  kkshowText: {fileID: 0}
 --- !u!136 &-1317253089743367140
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1609,10 +1611,10 @@ Rigidbody:
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!1 &4687846688752493125
 GameObject:
